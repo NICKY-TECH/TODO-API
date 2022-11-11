@@ -35,18 +35,22 @@ function addTask(req,res){
 };
 
 function getAllTasks(req,res){
+    Todo.find({},function(error,results){
+        if(error){
+            console.log(`${error}`)
+        }
 
-    let pageNumber=req.params.page||0;
-    let taskPerPage=2;
-    Todo.find({})
-    .then((results) => {
-        if(results.length!=0){
+        
+        else if(results.length!=0){
             return res.status(200).json(results);
-        }else if(results.length==0){
+        }
+        
+        else if(results.length==0){
             return res.status(404).json({
                 message:"no task has been created yet"
             });
         }
+
     })
 }
 
