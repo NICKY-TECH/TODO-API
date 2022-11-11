@@ -5,19 +5,30 @@ const {Todo}=require(path.join(__dirname,'..','model','Todo.model'));
 const {validationResult}=require('express-validator');
 
 function addTask(req,res){
+    const titleVariable=req.body.title;
     const error= validationResult(req).array();
     if(error.length!=0){
         return res.status(400).json(error)
     }
 
     else{
-        Todo.create({
-            title:req.body.title,
-            description:req.body.description
-        })
-    
-        res.status(200).json({
-            input:req.body
+        Todo.findOne({title:titleVariable},function(error,result){
+            if(error){
+                console.log(`${error}`)
+            }else if(result){
+                res.status(400).json({
+                    message:"A task with this title already exists"
+                })
+            }else if(!(result)){
+                Todo.create({
+                    title:req.body.title,
+                    description:req.body.description
+                })
+            
+                res.status(201).json({
+                    input:req.body
+                })
+            }
         })
     }
 
@@ -29,7 +40,13 @@ function getAllTasks(req,res){
     let taskPerPage=2;
     Todo.find({})
     .then((results) => {
-        return res.status(200).json(results);
+        if(results.length!=0){
+            return res.status(200).json(results);
+        }else if(results.length==0){
+            return res.status(404).json({
+                message:"no task has been created yet"
+            });
+        }
     })
 }
 
@@ -96,7 +113,7 @@ function deleteTask (req,res){
     const titleVariable=req.params.title;
     Todo.findOneAndDelete({title:titleVariable}).then(()=>{
         res.status(200).json({
-            "message":"task was deleted successfully"
+            message:"task was deleted successfully"
         })
     })
 }
